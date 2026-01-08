@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-const API_BASE = 'http://localhost:8000/api'; // Твой DRF порт
+const API_BASE = 'http://localhost:8000/api';
 
 interface LoginData {
   email: string;
