@@ -186,6 +186,8 @@ export const useDeleteUser = () => {
         throw new Error(`Ошибка удаления: ${errorMsg}`);
       }
 
+      // Для 204 No Content нет тела, возвращаем null
+      if (response.status === 204) return null;
       return response.json();
     },
     onSuccess: () => {
@@ -224,6 +226,36 @@ export const useLogout = () => {
       queryClient.clear();
       console.log('✅ Выход выполнен, кэш очищен');
       navigate('/auth');
+    },
+  });
+};
+
+// === useSwitchRole ===
+export const useSwitchRole = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Токен не найден');
+
+      const response = await fetch('/api/auth/switch-role/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorMsg = await parseError(response);
+        throw new Error(`Ошибка смены роли: ${errorMsg}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      console.log('✅ Роль сменена');
     },
   });
 };
