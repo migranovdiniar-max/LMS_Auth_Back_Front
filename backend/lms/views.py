@@ -58,3 +58,25 @@ class CourseDetailView(APIView):
             })
         except Course.DoesNotExist:
             return Response({"detail": "Курс не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CourseUpdateView(APIView):
+    permission_classes = [IsAuthenticatedUser, HasPermission("courses", "create")]
+    
+    def put(self, request, pk):
+        try:
+            course = Course.objects.get(id=pk)
+            if course.creator != request.user:
+                return Response({"error": "Not your course"}, status=403)
+            course.title = request.data.get("title", course.title)
+            course.description = request.data.get("description", course.description)
+            course.save()
+            return Response({
+                "id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "creator": f"{course.creator.first_name} {course.creator.last_name}".strip() or course.creator.email,
+                "created_at": course.created_at
+            })
+        except Course.DoesNotExist:
+            return Response({"detail": "Курс не найден"}, status=status.HTTP_404_NOT_FOUND)

@@ -111,7 +111,7 @@ export const useProfile = () => {
 
       const response = await fetch('/api/auth/me/', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
         },
       });
 
@@ -177,7 +177,7 @@ export const useDeleteUser = () => {
       const response = await fetch('/api/users/me/', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
         },
       });
 
@@ -211,7 +211,7 @@ export const useLogout = () => {
       const response = await fetch('/api/auth/logout/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
         },
       });
 
@@ -242,7 +242,7 @@ export const useSwitchRole = () => {
       const response = await fetch('/api/auth/switch-role/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
         },
       });
 
