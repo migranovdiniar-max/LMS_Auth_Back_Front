@@ -33,7 +33,7 @@ const AuthPage = () => {
       { email: loginData.email, password: loginData.password },
       {
         onSuccess: (data) => {
-          localStorage.setItem('token', data.access || data.token);
+          localStorage.setItem('token', data.access_token || data.access || data.token);
           navigate('/');
         },
         onError: (error: any) => {

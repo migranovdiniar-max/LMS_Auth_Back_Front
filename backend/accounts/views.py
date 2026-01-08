@@ -40,6 +40,13 @@ class MeView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
 
+    def put(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticatedUser]
