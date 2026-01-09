@@ -7,7 +7,13 @@ const useCourses = () => {
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/lms/courses/', {
+<<<<<<< HEAD
         headers: { 'Authorization': `Bearer ${token}` },
+=======
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
       });
       if (!response.ok) throw new Error('Failed to fetch courses');
       return response.json();
@@ -23,7 +29,11 @@ const useCreateCourse = () => {
       const response = await fetch('/api/lms/courses/create/', {
         method: 'POST',
         headers: {
+<<<<<<< HEAD
           'Authorization': `Bearer ${token}`,
+=======
+          'Authorization': `Token ${token}`,
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
@@ -67,6 +77,7 @@ const CoursesPage = () => {
   if (error) return <div>Ошибка загрузки курсов</div>;
 
   return (
+<<<<<<< HEAD
     <>
       <style jsx>{`
         body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
@@ -79,6 +90,12 @@ const CoursesPage = () => {
       <h1>Курсы</h1>
       {courses?.map((course: any) => (
         <div key={course.id} className="course">
+=======
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Курсы</h1>
+      {courses?.map((course: any) => (
+        <div key={course.id} style={{ border: '1px solid #ccc', padding: '10px', margin: '10px 0' }}>
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
           <h2>{course.title}</h2>
           <p>{course.description}</p>
           <p>Создатель: {course.creator}</p>
@@ -86,7 +103,11 @@ const CoursesPage = () => {
         </div>
       ))}
       {isCreator && (
+<<<<<<< HEAD
         <form onSubmit={handleCreate}>
+=======
+        <form onSubmit={handleCreate} style={{ marginTop: '20px' }}>
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
           <h2>Создать курс</h2>
           <input
             type="text"
@@ -94,18 +115,32 @@ const CoursesPage = () => {
             value={newCourse.title}
             onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
             required
+<<<<<<< HEAD
+=======
+            style={{ display: 'block', margin: '10px 0', width: '100%' }}
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
           />
           <textarea
             placeholder="Описание"
             value={newCourse.description}
             onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+<<<<<<< HEAD
           />
           <button type="submit" disabled={createMutation.isPending}>
+=======
+            style={{ display: 'block', margin: '10px 0', width: '100%' }}
+          />
+          <button type="submit" disabled={createMutation.isPending} style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none' }}>
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
             {createMutation.isPending ? 'Создание...' : 'Создать'}
           </button>
         </form>
       )}
+<<<<<<< HEAD
     </>
+=======
+    </div>
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
   );
 };
 

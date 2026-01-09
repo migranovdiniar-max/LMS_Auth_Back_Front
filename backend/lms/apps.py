@@ -16,5 +16,13 @@ class LmsConfig(AppConfig):
                     Course.objects.create(title="Введение в Python", description="Основы Python", creator=user1)
                     Course.objects.create(title="React для начинающих", description="Изучение React", creator=user1)
                     Course.objects.create(title="Docker и DevOps", description="Контейнеризация", creator=user1)
+<<<<<<< HEAD
             except:
                 pass  # Игнорируем если нет пользователей
+=======
+                    Course.objects.create(title="JavaScript Advanced", description="Продвинутый JS", creator=user1)
+                    Course.objects.create(title="Machine Learning Basics", description="Основы ML", creator=user1)
+                    Course.objects.create(title="Web Security", description="Безопасность веб-приложений", creator=user1)
+            except:
+                pass
+>>>>>>> ba8323e4338036c2699ea7b524557ad810a44fdb
