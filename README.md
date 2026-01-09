@@ -42,6 +42,9 @@
 - POST /api/admin/assign-role/ — назначить роль (body: {"user_id": 1, "role_name": "creator"})
 - GET /api/admin/roles/ — список ролей
 - POST /api/admin/create-permission/ — создать новое разрешение (body: {"resource": "lessons", "action": "read", "description": "..."})
+  
+### Возмодность Админа: изменение роли пользователя:
+![Админ](images/admin.png)
 
 ## Запуск проекта
 1. `python manage.py migrate` — создаст все таблицы и тестовые данные
