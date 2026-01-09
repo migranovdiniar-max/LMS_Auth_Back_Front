@@ -21,6 +21,7 @@
 4. **RolePermission** — связь многие-ко-многим между Role и Permission.
 5. **UserRole** — связь многие-ко-многим между User и Role.
 6. **Token** — токены аутентификации (хэш токена, expires_at, is_revoked).
+   images/DB_ERD.png
 
 ### Логика доступа
 - При регистрации пользователь автоматически получает роль **student**.
