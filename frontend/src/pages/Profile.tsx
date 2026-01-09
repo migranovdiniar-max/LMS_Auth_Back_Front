@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProfile, useUpdateProfile, useDeleteUser, useLogout } from '../hooks/useAuth';
+import { useProfile, useUpdateProfile, useDeleteUser, useLogout, useSwitchRole } from '../hooks/useAuth';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -8,6 +8,24 @@ const ProfilePage = () => {
   const updateMutation = useUpdateProfile();
   const deleteMutation = useDeleteUser();
   const logoutMutation = useLogout();
+  const switchRoleMutation = useSwitchRole();
+
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthorized(true);
+    } else {
+      navigate('/auth');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (profileError) {
+      navigate('/auth');
+    }
+  }, [profileError, navigate]);
 
   const [editData, setEditData] = useState({
     first_name: '',
@@ -57,6 +75,23 @@ const ProfilePage = () => {
     });
   };
 
+  const handleSwitchRole = () => {
+    switchRoleMutation.mutate(undefined, {
+      onSuccess: () => {
+        alert('Роль сменена!');
+      },
+      onError: (error: any) => {
+        alert('Ошибка смены роли: ' + error.message);
+      },
+    });
+  };
+
+  const handleGoToCourses = () => {
+    navigate('/courses');
+  };
+
+  if (!authorized) return <div>Проверка авторизации...</div>;
+
   if (profileLoading) return <div>Загрузка...</div>;
   if (profileError) return <div>Ошибка загрузки профиля</div>;
 
@@ -71,13 +106,27 @@ const ProfilePage = () => {
           background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
         }
         .main {
-          width: 350px; height: 580px; overflow: hidden;
+          width: 350px; height: 700px; /* увеличил высоту */
+          overflow-y: auto; /* добавил прокрутку */
           background: url("https://doc-08-2c-docs.googleusercontent.com/docs/securesc/68c90smiglihng9534mvqmq1946dmis5/fo0picsp1nhiucmc0l25s29respgpr4j/1631524275000/03522360960922298374/03522360960922298374/1Sx0jhdpEpnNIydS4rnN4kHSJtU1EyWka?e=view&authuser=0&nonce=gcrocepgbb17m&user=03522360960922298374&hash=tfhgbs86ka6divo3llbvp93mg4csvb38") no-repeat center/ cover;
           border-radius: 10px; box-shadow: 5px 20px 50px #000;
           padding: 20px; color: #fff;
+          position: relative;
+        }
+        .main::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0, 0, 0, 0.5); /* полупрозрачный оверлей для лучшей читабельности текста */
+          border-radius: 10px;
+          z-index: 1;
+        }
+        .main > * {
+          position: relative;
+          z-index: 2;
         }
         .profile-info { margin-bottom: 20px; }
-        .profile-info p { margin: 10px 0; }
+        .profile-info p { margin: 10px 0; font-size: 16px; }
         form { margin-bottom: 20px; }
         input {
           width: 80%; height: 35px; background: #e0dede;
@@ -85,7 +134,7 @@ const ProfilePage = () => {
           border: none; outline: none; border-radius: 5px; font-size: 14px;
         }
         button {
-          width: 80%; height: 40px; margin: 15px auto;
+          width: 80%; height: 40px; margin: 10px auto; /* уменьшил margin */
           display: block; color: #fff; background: #573b8a;
           font-size: 1em; font-weight: bold; border: none;
           border-radius: 5px; transition: .2s ease-in; cursor: pointer;
@@ -112,17 +161,23 @@ const ProfilePage = () => {
           <input name="first_name" placeholder="Имя" value={editData.first_name} onChange={handleEditChange} />
           <input name="last_name" placeholder="Фамилия" value={editData.last_name} onChange={handleEditChange} />
           <input name="patronymic" placeholder="Отчество" value={editData.patronymic} onChange={handleEditChange} />
-          <button type="submit" disabled={updateMutation.isLoading}>
-            {updateMutation.isLoading ? 'Обновление...' : 'Обновить профиль'}
+          <button type="submit" disabled={updateMutation.isPending}>
+            {updateMutation.isPending ? 'Обновление...' : 'Обновить профиль'}
           </button>
         </form>
 
-        <button className="logout-btn" onClick={handleLogout} disabled={logoutMutation.isLoading}>
-          {logoutMutation.isLoading ? 'Выход...' : 'Выйти'}
+        <button onClick={handleSwitchRole} disabled={switchRoleMutation.isPending}>
+          {switchRoleMutation.isPending ? 'Смена...' : 'Сменить роль'}
         </button>
 
-        <button className="delete-btn" onClick={handleDelete} disabled={deleteMutation.isLoading}>
-          {deleteMutation.isLoading ? 'Удаление...' : 'Удалить аккаунт'}
+        <button onClick={handleGoToCourses}>Курсы</button>
+
+        <button className="logout-btn" onClick={handleLogout} disabled={logoutMutation.isPending}>
+          {logoutMutation.isPending ? 'Выход...' : 'Выйти'}
+        </button>
+
+        <button className="delete-btn" onClick={handleDelete} disabled={deleteMutation.isPending}>
+          {deleteMutation.isPending ? 'Удаление...' : 'Удалить аккаунт'}
         </button>
       </div>
     </>
