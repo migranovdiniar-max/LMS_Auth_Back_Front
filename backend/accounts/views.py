@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import Token, Role, UserRole
+from .models import Token
 from .permissions import IsAuthenticatedUser
 from rest_framework import exceptions
 
@@ -94,21 +94,3 @@ class DeleteUserView(APIView):
         )
         
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SwitchRoleView(APIView):
-    permission_classes = [IsAuthenticatedUser]
-
-    def post(self, request):
-        user = request.user
-        student_role, _ = Role.objects.get_or_create(name="student")
-        creator_role, _ = Role.objects.get_or_create(name="creator")
-
-        if user.user_roles.filter(role__name="creator").exists():
-            user.user_roles.filter(role=creator_role).delete()
-            UserRole.objects.create(user=user, role=student_role)
-        else:
-            user.user_roles.filter(role=student_role).delete()
-            UserRole.objects.create(user=user, role=creator_role)
-
-        return Response({"roles": user.get_roles_list()}, status=status.HTTP_200_OK)

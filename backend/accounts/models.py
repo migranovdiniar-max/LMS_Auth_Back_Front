@@ -106,9 +106,9 @@ class User(models.Model):
             return False
 
     def has_permission(self, resource: str, action: str) -> bool:
-        return self.user_roles.filter(
-            role__rolepermission__permission__resource=resource,
-            role__rolepermission__permission__action=action,
+        return self.roles.filter(
+            rolepermission__permission__resource=resource,
+            rolepermission__permission__action=action,
         ).exists()
 
     def get_roles_list(self):

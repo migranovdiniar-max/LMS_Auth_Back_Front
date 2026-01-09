@@ -9,7 +9,7 @@ class CustomTokenAuthentication(BaseAuthentication):
         if not auth:
             return None
 
-        if not auth.startswith("Token "):
+        if not auth.startswith("Bearer "):
             raise exceptions.AuthenticationFailed("Неверный формат заголовка Authorization")
 
         raw_token = auth.split(" ", 1)[1].strip()
@@ -21,4 +21,4 @@ class CustomTokenAuthentication(BaseAuthentication):
         return (user, None)
 
     def authenticate_header(self, request):
-        return "Token"
+        return "Bearer"
