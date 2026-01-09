@@ -1,32 +1,43 @@
-# LMS Access Control System
+# LMS Authentication & Authorization System
 
-## Схема управления ограничениями доступа
+## Описание системы разграничения прав доступа (RBAC)
 
-Система основана на ролевой модели (RBAC - Role-Based Access Control) с дополнительными разрешениями.
+### Схема базы данных
 
-### Таблицы БД:
-- **User**: Пользователи (email, password, first_name, last_name, patronymic, is_active).
-- **Role**: Роли (name, description). Примеры: "student", "creator", "admin".
-- **Permission**: Разрешения (resource, action, description). Resource: "courses", "lessons", "users", "acl". Action: "read", "create", "update", "delete", "manage".
-- **RolePermission**: Связь ролей и разрешений (role, permission).
-- **UserRole**: Связь пользователей и ролей (user, role).
-- **Token**: Токены для аутентификации (user, token_hash, expires_at, is_revoked).
+1. **User** — пользователи системы (email, имена, password_hash, is_active).
+2. **Role** — роли (name, description). Примеры: student, creator, admin.
+3. **Permission** — разрешения (resource, action, description).  
+   Примеры:  
+   - resource="courses", action="read"  
+   - resource="courses", action="create"  
+   - resource="acl", action="manage"
+4. **RolePermission** — связь многие-ко-многим между Role и Permission.
+5. **UserRole** — связь многие-ко-многим между User и Role.
+6. **Token** — токены аутентификации (хэш токена, expires_at, is_revoked).
 
-### Логика доступа:
-- Пользователь аутентифицируется по токену (401 если токен отсутствует/неверный).
-- Для ресурса проверяется наличие разрешения: user.roles -> role.permissions -> permission.resource == resource and permission.action == action.
-- Если доступа нет, 403 Forbidden.
-- Администратор (роль "admin") имеет разрешения на "acl" "manage" для управления ролями/разрешениями.
+### Логика доступа
+- При регистрации пользователь автоматически получает роль **student**.
+- Проверка прав происходит в `HasPermission`: ищет, есть ли у пользователя через роли нужное разрешение (resource:action).
+- Без токена → 401 Unauthorized.
+- С токеном, но без права → 403 Forbidden.
 
-### Тестовые данные:
-- Роли: student, creator, admin.
-- Разрешения: courses:read/create, users:manage, acl:manage.
-- Пользователи: обычные с student/creator, один admin.
+### Тестовые данные (создаются автоматически миграцией 0004_initial_rbac_data)
+- Роли: student, creator, admin
+- Разрешения: courses:read, courses:create, acl:manage
+- Привязки:
+  - student → courses:read
+  - creator → courses:read + courses:create
+  - admin → acl:manage
 
-### API для администратора:
-- GET /api/admin/users/ - список пользователей с ролями (требует acl:manage).
-- POST /api/admin/assign-role/ - назначить роль пользователю (user_id, role_name).
-- GET /api/admin/roles/ - список ролей.
-- POST /api/admin/create-permission/ - создать разрешение.
+### Админские API (только для роли admin)
+- GET /api/admin/users/ — список пользователей с ролями
+- POST /api/admin/assign-role/ — назначить роль (body: {"user_id": 1, "role_name": "creator"})
+- GET /api/admin/roles/ — список ролей
+- POST /api/admin/create-permission/ — создать новое разрешение (body: {"resource": "lessons", "action": "read", "description": "..."})
 
-Все эндпоинты требуют аутентификации и соответствующих разрешений.
+## Запуск проекта
+1. `python manage.py migrate` — создаст все таблицы и тестовые данные
+2. `python manage.py runserver`
+3. Фронтенд: `npm run dev` в папке frontend
+
+Проект демонстрирует полностью собственную систему аутентификации и RBAC без использования встроенных механизмов Django Auth.

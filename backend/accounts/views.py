@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework import exceptions
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import Token, Role, UserRole
-from .permissions import IsAuthenticatedUser
+from .models import Permission, Token, Role, User, UserRole
+from .permissions import HasPermission, IsAuthenticatedUser
 
 
 class RegisterView(APIView):
@@ -146,3 +146,75 @@ class BecomeCreatorView(APIView):
         
         UserRole.objects.create(user=user, role=creator_role)
         return Response({"detail": "Вы успешно стали автором курсов!"}, status=status.HTTP_200_OK)
+
+
+class AdminUserListView(APIView):
+    permission_classes = [IsAuthenticatedUser, HasPermission]  # ← заменил
+    required_resource = "acl"
+    required_action = "manage"
+
+    def get(self, request):
+        users = User.objects.all()
+        data = []
+        for user in users:
+            serializer = UserSerializer(user)
+            data.append(serializer.data)
+        return Response(data)
+
+
+class AdminAssignRoleView(APIView):
+    permission_classes = [IsAuthenticatedUser, HasPermission]  # ← заменил
+    required_resource = "acl"
+    required_action = "manage"
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        role_name = request.data.get("role_name")
+
+        if not user_id or not role_name:
+            return Response({"error": "user_id and role_name required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=user_id)
+            role = Role.objects.get(name=role_name)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Role.DoesNotExist:
+            return Response({"error": "Role not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        UserRole.objects.get_or_create(user=user, role=role)
+        return Response({"detail": f"Роль {role_name} назначена пользователю {user.email}"})
+
+
+class AdminRoleListView(APIView):
+    permission_classes = [IsAuthenticatedUser, HasPermission]  # ← заменил
+    required_resource = "acl"
+    required_action = "manage"
+
+    def get(self, request):
+        roles = Role.objects.all()
+        data = [{"id": role.id, "name": role.name, "description": role.description or ""} for role in roles]
+        return Response(data)
+
+
+class AdminCreatePermissionView(APIView):
+    permission_classes = [IsAuthenticatedUser, HasPermission]  # ← заменил
+    required_resource = "acl"
+    required_action = "manage"
+
+    def post(self, request):
+        resource = request.data.get("resource")
+        action = request.data.get("action")
+        description = request.data.get("description", "")
+
+        if not resource or not action:
+            return Response({"error": "resource and action required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        permission, created = Permission.objects.get_or_create(
+            resource=resource,
+            action=action,
+            defaults={"description": description}
+        )
+        if created:
+            return Response({"detail": "Permission created", "id": permission.id}, status=201)
+        return Response({"detail": "Permission already exists"})

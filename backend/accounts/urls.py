@@ -1,5 +1,9 @@
 from django.urls import path
 from .views import (
+    AdminAssignRoleView,
+    AdminCreatePermissionView,
+    AdminRoleListView,
+    AdminUserListView,
     BecomeCreatorView,
     RegisterView,
     LoginView,
@@ -20,4 +24,9 @@ urlpatterns = [
     
     path("auth/change-role/", ChangeRoleView.as_view(), name="change-role"),
     path("auth/become-creator/", BecomeCreatorView.as_view(), name="become-creator"),
+
+    path("admin/users/", AdminUserListView.as_view(), name="admin-users"),
+    path("admin/assign-role/", AdminAssignRoleView.as_view(), name="admin-assign-role"),
+    path("admin/roles/", AdminRoleListView.as_view(), name="admin-roles"),
+    path("admin/create-permission/", AdminCreatePermissionView.as_view(), name="admin-create-permission"),
 ]
