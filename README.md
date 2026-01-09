@@ -43,7 +43,7 @@
 - GET /api/admin/roles/ — список ролей
 - POST /api/admin/create-permission/ — создать новое разрешение (body: {"resource": "lessons", "action": "read", "description": "..."})
   
-### Возмодность Админа: изменение роли пользователя:
+### Возможность Админа - изменение роли пользователя:
 ![Админ](images/admin.png)
 
 ## Запуск проекта
@@ -51,4 +51,21 @@
 2. `python manage.py runserver`
 3. Фронтенд: `npm run dev` в папке frontend
 
+## Аутентификация
+![аут](images/Auth.png)
+
+## Логирование
+![аут](images/Login.png)
+
+## Тестовый профиль студента
+![аут](images/Student.png)
+
+## Тестовый профиль автора
+![аут](images/Author.png)
+
+## Курсы: студент - просмотр
+![аут](images/courses_student_read.png)
+
+## Курсы: автор - создание
+![аут](images/courses_author_create.png)
 Проект демонстрирует полностью собственную систему аутентификации и RBAC без использования встроенных механизмов Django Auth.
