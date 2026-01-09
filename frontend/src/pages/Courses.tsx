@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useProfile } from '../hooks/useAuth';
 
 const useCourses = () => {
   return useQuery({
     queryKey: ['courses'],
     queryFn: async () => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/lms/courses/', {
-        headers: { 'Authorization': `Bearer ${token}` },
+      if (!token) throw new Error('Нет токена');
+      const response = await fetch('/api/courses/', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to fetch courses');
       return response.json();
@@ -20,10 +22,11 @@ const useCreateCourse = () => {
   return useMutation({
     mutationFn: async (data: { title: string; description: string }) => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/lms/courses/create/', {
+      if (!token) throw new Error('Нет токена');
+      const response = await fetch('/api/courses/create/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
@@ -39,15 +42,10 @@ const useCreateCourse = () => {
 
 const CoursesPage = () => {
   const { data: courses, isLoading, error } = useCourses();
+  const { data: profile } = useProfile();
   const createMutation = useCreateCourse();
-  const { data: profile } = useQuery({ queryKey: ['profile'], queryFn: async () => {
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/auth/me/', { headers: { 'Authorization': `Bearer ${token}` } });
-    if (!response.ok) throw new Error('Failed to fetch profile');
-    return response.json();
-  }});
-  const [newCourse, setNewCourse] = useState({ title: '', description: '' });
 
+  const [newCourse, setNewCourse] = useState({ title: '', description: '' });
   const isCreator = profile?.roles?.includes('creator');
 
   const handleCreate = (e: React.FormEvent) => {
@@ -76,7 +74,9 @@ const CoursesPage = () => {
         button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
         button:hover { background: #0056b3; }
       `}</style>
+
       <h1>Курсы</h1>
+
       {courses?.map((course: any) => (
         <div key={course.id} className="course">
           <h2>{course.title}</h2>
@@ -85,6 +85,7 @@ const CoursesPage = () => {
           <p>Дата: {new Date(course.created_at).toLocaleDateString()}</p>
         </div>
       ))}
+
       {isCreator && (
         <form onSubmit={handleCreate}>
           <h2>Создать курс</h2>

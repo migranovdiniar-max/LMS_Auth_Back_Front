@@ -4,7 +4,7 @@ import { useLogin, useRegister } from '../hooks/useAuth';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  
+
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
     firstName: '',
@@ -12,7 +12,7 @@ const AuthPage = () => {
     middleName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const navigate = useNavigate();
@@ -29,51 +29,28 @@ const AuthPage = () => {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(
-      { email: loginData.email, password: loginData.password },
-      {
-        onSuccess: (data) => {
-          localStorage.setItem('token', data.access_token || data.access || data.token);
-          navigate('/');
-        },
-        onError: (error: any) => {
-          alert('Ошибка входа: ' + error.message);
-        },
-      }
-    );
+    loginMutation.mutate({ email: loginData.email, password: loginData.password });
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (registerData.password !== registerData.confirmPassword) {
       alert('Пароли не совпадают!');
       return;
     }
-
-    registerMutation.mutate(
-      {
-        email: registerData.email,
-        password: registerData.password,
-        password_repeat: registerData.confirmPassword,
-        first_name: registerData.firstName,
-        last_name: registerData.lastName,
-        patronymic: registerData.middleName,
+    registerMutation.mutate({
+      email: registerData.email,
+      password: registerData.password,
+      password_repeat: registerData.confirmPassword,
+      first_name: registerData.firstName,
+      last_name: registerData.lastName,
+      patronymic: registerData.middleName || undefined,
+    }, {
+      onSuccess: () => {
+        alert('Регистрация успешна! Теперь войдите.');
+        setIsLogin(true);
       },
-      {
-        onSuccess: () => {
-          alert('Регистрация успешна! Теперь войдите.');
-          setIsLogin(true);
-          setRegisterData({ 
-            firstName:'', lastName:'', middleName:'', 
-            email:'', password:'', confirmPassword:'' 
-          });
-        },
-        onError: (error: any) => {
-          alert('Ошибка регистрации: ' + error.message);
-        },
-      }
-    );
+    });
   };
 
   return (
@@ -122,26 +99,19 @@ const AuthPage = () => {
       `}</style>
 
       <div className="main">
-        <input 
-          type="checkbox" 
-          id="chk" 
-          checked={!isLogin} 
-          onChange={() => {
-            setIsLogin(!isLogin);
-            if (isLogin) {
-              setRegisterData({ firstName:'', lastName:'', middleName:'', email:'', password:'', confirmPassword:'' });
-            } else {
-              setLoginData({ email: '', password: '' });
-            }
-          }}
+        <input
+          type="checkbox"
+          id="chk"
+          checked={!isLogin}
+          onChange={() => setIsLogin(!isLogin)}
         />
-        
+
         <div className="signup">
           <form onSubmit={handleRegisterSubmit}>
             <label htmlFor="chk">Регистрация</label>
             <input name="firstName" placeholder="Имя" value={registerData.firstName} onChange={handleRegisterChange} required />
             <input name="lastName" placeholder="Фамилия" value={registerData.lastName} onChange={handleRegisterChange} required />
-            <input name="middleName" placeholder="Отчество" value={registerData.middleName} onChange={handleRegisterChange} required />
+            <input name="middleName" placeholder="Отчество" value={registerData.middleName} onChange={handleRegisterChange} />
             <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleRegisterChange} required />
             <input type="password" name="password" placeholder="Пароль" value={registerData.password} onChange={handleRegisterChange} required />
             <input type="password" name="confirmPassword" placeholder="Повтор пароля" value={registerData.confirmPassword} onChange={handleRegisterChange} required />

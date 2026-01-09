@@ -1,11 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import exceptions
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import Token
+from .models import Token, Role, UserRole
 from .permissions import IsAuthenticatedUser
-from rest_framework import exceptions
 
 
 class RegisterView(APIView):
@@ -45,7 +45,7 @@ class MeView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(APIView):
@@ -83,14 +83,66 @@ class DeleteUserView(APIView):
 
     def delete(self, request):
         user = request.user
-        
         user.is_active = False
-        user.save(update_fields=['is_active'])
-        
+        user.save(update_fields=["is_active"])
+
         from django.utils import timezone
         user.tokens.filter(is_revoked=False).update(
             is_revoked=True,
             expires_at=timezone.now()
         )
-        
+
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ChangeRoleView(APIView):
+    permission_classes = [IsAuthenticatedUser]
+
+    def post(self, request):
+        role_name = request.data.get("role")
+
+        if role_name not in ["student", "creator"]:
+            return Response(
+                {"detail": "Недопустимая роль"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+        role, _ = Role.objects.get_or_create(name=role_name)
+
+        # Если роль уже активна
+        if UserRole.objects.filter(user=user, role=role).exists():
+            return Response(
+                {
+                    "detail": f"Роль {role_name} уже активна",
+                    "roles": user.get_roles_list()
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # Удаляем все старые роли
+        UserRole.objects.filter(user=user).delete()
+
+        # Назначаем новую
+        UserRole.objects.create(user=user, role=role)
+
+        return Response(
+            {
+                "detail": f"Роль успешно изменена на {role_name}",
+                "roles": user.get_roles_list()
+            },
+            status=status.HTTP_200_OK
+        )
+
+class BecomeCreatorView(APIView):
+    permission_classes = [IsAuthenticatedUser]
+
+    def post(self, request):
+        user = request.user
+        creator_role, _ = Role.objects.get_or_create(name="creator")
+        
+        # Если роль уже есть — просто сообщаем
+        if user.user_roles.filter(role=creator_role).exists():
+            return Response({"detail": "Вы уже являетесь автором курсов"}, status=status.HTTP_200_OK)
+        
+        UserRole.objects.create(user=user, role=creator_role)
+        return Response({"detail": "Вы успешно стали автором курсов!"}, status=status.HTTP_200_OK)
